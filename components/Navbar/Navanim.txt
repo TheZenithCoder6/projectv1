@@ -1,0 +1,157 @@
+"use client";
+
+import { motion, useAnimation } from "framer-motion";
+import { useLayoutEffect, useState } from "react";
+
+export default function SprayRevealFinal() {
+  const controls = useAnimation();
+  const [showSmile, setShowSmile] = useState(false);
+  const [isSpraying, setIsSpraying] = useState(false);
+  const [isFacingUser, setIsFacingUser] = useState(false);
+  const [clipWidth, setClipWidth] = useState(0);
+
+  const startX = 100;   
+  const endX = 700;     
+  const paintDuration = 4;
+
+  const runSequence = async () => {
+    // 1. Initial Reset
+    setClipWidth(0);
+    setShowSmile(false);
+    setIsFacingUser(false);
+    setIsSpraying(false);
+    await controls.set({ x: -150, rotateY: 0 });
+
+    // 2. Walk to 'S'
+    await controls.start({
+      x: startX,
+      transition: { duration: 1.3, ease: "easeOut" }
+    });
+
+    // 3. Take out Spray from Bag
+    setIsSpraying(true); 
+    await new Promise(r => setTimeout(r, 500));
+
+    // 4. Move Artist & Reveal Text via Clip-Path
+    // We animate clipWidth from 0 to 100%
+    await Promise.all([
+      controls.start({
+        x: endX,
+        transition: { duration: paintDuration, ease: "linear" }
+      }),
+      new Promise((resolve) => {
+        let startTime = Date.now();
+        const interval = setInterval(() => {
+          let elapsed = (Date.now() - startTime) / (paintDuration * 800);
+          if (elapsed >= 1) {
+            setClipWidth(100);
+            clearInterval(interval);
+            resolve(true);
+          } else {
+            setClipWidth(elapsed * 100);
+          }
+        }, 40);
+      })
+    ]);
+
+    // 5. Put Spray back in Bag
+    setIsSpraying(false);
+    await new Promise(r => setTimeout(r, 400));
+
+    // 6. Turn Around to face User
+    setIsFacingUser(true);
+    await controls.start({
+      rotateY: 180,
+      transition: { duration: 0.7, ease: "backOut" }
+    });
+
+    // 7. Smile!
+    setShowSmile(true);
+  };
+
+  useLayoutEffect(() => {
+    runSequence();
+  }, []);
+
+  return (
+    <div className="relative w-full h-42 bg-white flex flex-col items-center justify-center overflow-hidden font-sans z-0"
+             style={{ transform: "translateZ(0)" }}>
+      
+      <div className="relative w-[800px] h-[300px]">
+        {/* 1. GHOST TEXT (Very light gray just to show path) */}
+        <div className="absolute inset-0 flex items-center justify-center text-[20px] md:text-[60px] font-black text-gray-50 select-none tracking-tighter">
+          SCROLL DOWN
+        </div>
+
+        {/* 2. REVEALED BLACK TEXT (Using Clip Path - 100% Visible) */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center text-[20px] md:text-[60px] font-black text-black select-none tracking-tighter"
+          style={{ 
+            clipPath: `inset(0 ${100 - clipWidth}% 0 0)`,
+            fontFamily: 'Arial Black, sans-serif'
+          }}
+        >
+          SCROLL DOWN
+        </div>
+
+        {/* 🕺 3. THE ARTIST SVG */}
+        <motion.div 
+          animate={controls}
+          className="absolute top-1/2 -mt-24 pointer-events-none"
+          style={{ width: "90px", height: "200px", transformOrigin: "center" }}
+        >
+          <svg viewBox="0 0 150 250" className="w-full h-full overflow-visible">
+             <g transform="translate(75, 125) scale(1.2)">
+                {/* Legs & Shoes */}
+                <path d="M-20 20 L-30 80 M10 20 L20 80" stroke="#1e293b" strokeWidth="15" strokeLinecap="round" />
+                <rect x="-40" y="75" width="25" height="10" rx="4" fill="#111" />
+                <rect x="10" y="75" width="25" height="10" rx="4" fill="#111" />
+
+                {/* Body Shirt */}
+                <rect x="-35" y="-40" width="60" height="80" rx="10" fill="#2563eb" />
+                
+                {/* 🎒 The Bag on Back */}
+                <rect x="-42" y="-30" width="12" height="50" rx="2" fill="#451a03" />
+
+                {/* Head */}
+                <circle cx="-5" cy="-70" r="28" fill="#fbd1b7" />
+                <path d="M-30 -85 Q-5 -110 20 -85" fill="#0f172a" />
+
+                {/* Face (Eyes & Smile) */}
+                {isFacingUser && (
+                  <g>
+                    <circle cx="-15" cy="-75" r="2.5" fill="black" />
+                    <circle cx="5" cy="-75" r="2.5" fill="black" />
+                    {showSmile && (
+                      <motion.path 
+                        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                        d="M-15 -60 Q-5 -50 5 -60" 
+                        stroke="black" strokeWidth="3" fill="none" strokeLinecap="round"
+                      />
+                    )}
+                  </g>
+                )}
+
+                {/* Arm & Spray Can */}
+                <motion.g animate={isSpraying ? { rotate: [-8, 8, -8], opacity: 1 } : { rotate: 0 }} transition={{ repeat: isSpraying ? Infinity : 0, // Sirf spray ke waqt loop chalega
+                  duration: 0.18 }}>
+                  <path d="M25 -10 L60 10" stroke="#2563eb" strokeWidth="15" strokeLinecap="round" />
+                  {isSpraying && (
+                    <g transform="translate(60, 10)">
+                      <rect x="-5" y="-10" width="15" height="30" fill="#475569" rx="2" />
+                      <rect x="-3" y="-15" width="11" height="5" fill="#000" />
+                      <motion.circle 
+                        cx="15" cy="-12" r="5" fill="black" opacity="0.2"
+                        animate={{ scale: [1, 3], opacity: [0.2, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.1 }}
+                      />
+                    </g>
+                  )}
+                </motion.g>
+             </g>
+          </svg>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+
+@font-face {
+  font-family: "MyFont"; 
+  src: url("/fonts/UcCo3FwrK3iLTcviYwYZ8UA3.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "MyFont", sans-serif; 
+}
+
+.heading-art {
+  font-family: "MyFont", sans-serif; 
+  letter-spacing: -0.05em;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #f5efef;
+}
+
+/* globals.css */
+:root {
+  --sat: env(safe-area-inset-top);
+}
+
+
+html,body{
+  overflow-x: hidden;
+  
+}
+/* HEARTBEAT */
+@layer utilities {
+  .animation-heartbeat{
+    display: inline-block;
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+}
+@keyframes  heartbeat {
+  0%, 100% {transform: scale(1);}
+   15% {transform: scale(1.15);}
+   30% {transform: scale(1);}
+   40% {transform: scale(1.15);}
+
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #444;
+
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+ .animation {
+  flex: 5;
+  transition: ease-in-out 0.75s;
+} 
+
+
+body {
+  font-family: myfont;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .auth-input {
+    @apply bg-[#eee] border-none py-3 px-4 my-2 w-full outline-none focus:ring-2 focus:ring-[#ff4b2b];
+  }
+
+  .auth-button {
+    @apply rounded-[20px] border border-[#ff4b2b] bg-[#ff4b2b] text-white text-xs font-bold py-3 px-11 tracking-wider uppercase transition-transform duration-75 active:scale-95 focus:outline-none;
+  }
+}
+
+/* Custom Keyframe for the Sign Up form appearance */
+@keyframes show {
+  0%, 49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  50%, 100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.animate-show {
+  animation: show 0.6s;
+}
